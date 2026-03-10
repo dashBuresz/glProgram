@@ -59,6 +59,7 @@ const char * fragSource = R"(
 
 const int winWidth = 600, winHeight = 600;
 /*
+* SKELETON to base the labwork program on. 
 class GreenTriangleApp : public glApp {
 	Geometry<vec2>* triangle = nullptr;  // geometria
 	GPUProgram* gpuProgram = nullptr;	 // csúcspont és pixel árnyalók
@@ -117,6 +118,7 @@ public:
 			float distance = sqrt(dx * dx + dy * dy);	//távolság kiszámítása	
 			if (distance < bestDistance) {			//ha a távolság kisebb, mint az eddigi legközelebbi pont távolsága, akkor a mostani index lesz a kiválasztott
 				pickedIndex = i;
+				bestDistance = distance;			
 			}
 		}
 		return pickedIndex;								//ha nincs pont a küszöbértéken belül, akkor a pickedIndex -1 marad és érvénytelen indexet adunk vissza
