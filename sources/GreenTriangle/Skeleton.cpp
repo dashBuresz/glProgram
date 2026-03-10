@@ -108,16 +108,18 @@ public:
 	vec3 getPoint(int index) { return geometry.Vtx()[index]; }	//pont lekérdezése index alapján
 	int pickPoint(const vec3& mouse, float threshold = 0.02f) 		//egér pozíció alapján pont kiválasztása egy adott távolságon belül
 	{
+		int pickedIndex = -1;					//változó a kiválasztott pont indexének tárolására, kezdetben -1 (érvénytelen index)
+		float bestDistance = threshold;			//változó a legjobb (legkisebb) távolság tárolására, kezdetben a küszöbérték
 		for (int i = 0; i<size(); i++) {
 			vec3 point = geometry.Vtx()[i];
 			float dx = point.x - mouse.x;		//távolság az egér és a pont x koordinátája között
 			float dy = point.y - mouse.y;		//távolság az egér és a pont y koordinátája között
 			float distance = sqrt(dx * dx + dy * dy);	//távolság kiszámítása	
-			if (distance < threshold) {			//ha a távolság kisebb, mint a küszöbérték, akkor visszatérünk a pont indexével
-				return i;
+			if (distance < bestDistance) {			//ha a távolság kisebb, mint az eddigi legközelebbi pont távolsága, akkor a mostani index lesz a kiválasztott
+				pickedIndex = i;
 			}
 		}
-		return -1;								//ha nincs pont a küszöbértéken belül, akkor -1-et (érvénytelen indexet) adunk vissza
+		return pickedIndex;								//ha nincs pont a küszöbértéken belül, akkor a pickedIndex -1 marad és érvénytelen indexet adunk vissza
 	}
 
 };
