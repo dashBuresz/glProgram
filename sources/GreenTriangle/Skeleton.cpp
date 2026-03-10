@@ -97,8 +97,11 @@ public:
 
 	}
 };
+
 class Line
 {
+	vec2 p1, p2;
+	Geometry<vec2> geometry;
 
 public:
 	bool containsPointNear(vec3 point, float threshold) 
@@ -119,6 +122,46 @@ class LineCollection
 {
 	std::vector<Line> lines;
 public:
+	void add(Line line) { lines.push_back(line); }
 
 };
 
+
+class Circle {
+
+};
+class CircleCollection
+{
+	std::vector<Circle> circles;
+public:
+
+};
+
+class Scene
+{
+
+public:
+	void draw() 
+	{
+	}
+};
+
+
+class LineApp : public glApp {
+	Scene scene;
+	GPUProgram* gpuProgram = nullptr;
+public:
+	LineApp() : glApp("Line app") { }
+	void onInitialization() {
+		glPointSize(10.0f);
+		glLineWidth(3.0f);
+		gpuProgram = new GPUProgram(vertSource, fragSource);
+	}
+	void onDisplay() {
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glViewport(0, 0, winWidth, winHeight);
+		scene.draw();
+	}
+};
+LineApp app;
