@@ -86,16 +86,40 @@ GreenTriangleApp app;*/
 
 class PointCollection
 {
-	std::vector<vec3> vertices;
+	Geometry<vec3> geometry;
 public:
-	void add(vec3 vertex) { vertices.push_back(vertex); }
-	int findNearby(vec3 vertex, float threshold) {
-		
-	}
-	void draw() 
+	PointCollection() {}
+	void addPoint(const vec3& point)		//függévny egy pont hozzáadására, ha konkrét pontot adunk meg paraméterként
 	{
-
+		geometry.Vtx().push_back(point);
+		geometry.updateGPU();
 	}
+	void addPoint(float x, float y)			//pont hozzáadása két koordinátával
+	{
+		geometry.Vtx().push_back(vec3(x, y, 1.0f));
+		geometry.updateGPU();
+	}
+	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1,0,0))	//pontok kirajzolása a megadott színnel
+	{
+		geometry.Draw(gpuProgram, GL_POINTS, color);
+	}
+	//utilities
+	int size() { return (int)geometry.Vtx().size(); }				//pontok számának lekérdezése
+	vec3 getPoint(int index) { return geometry.Vtx()[index]; }	//pont lekérdezése index alapján
+	int pickPoint(const vec3& mouse, float threshold = 0.02f) 		//egér pozíció alapján pont kiválasztása egy adott távolságon belül
+	{
+		for (int i = 0; i<size(); i++) {
+			vec3 point = geometry.Vtx()[i];
+			float dx = point.x - mouse.x;		//távolság az egér és a pont x koordinátája között
+			float dy = point.y - mouse.y;		//távolság az egér és a pont y koordinátája között
+			float distance = sqrt(dx * dx + dy * dy);	//távolság kiszámítása	
+			if (distance < threshold) {			//ha a távolság kisebb, mint a küszöbérték, akkor visszatérünk a pont indexével
+				return i;
+			}
+		}
+		return -1;								//ha nincs pont a küszöbértéken belül, akkor -1-et (érvénytelen indexet) adunk vissza
+	}
+
 };
 
 class Line
@@ -157,11 +181,11 @@ public:
 		glLineWidth(3.0f);
 		gpuProgram = new GPUProgram(vertSource, fragSource);
 	}
-	void onDisplay() {
+	void onDisplay() {							//based on the GreenTriangleApp::onDisplay()
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glViewport(0, 0, winWidth, winHeight);
-		scene.draw();
+		scene.draw();	//we draw the scene
 	}
 };
 LineApp app;
