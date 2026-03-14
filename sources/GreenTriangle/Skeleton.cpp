@@ -111,7 +111,7 @@ public:
 	Line(vec3 point1, vec3 point2) : p1(point1), p2(point2)
 	{
 		printf("Line added\n");
-		printf("	Implicit: %f x + %f y + %f\n", point1.y-point2.y, point2.x-point1.x, point1.x*point2.x-point1.y*point2.y);
+		printf("	Implicit: %f x + %f y + %f\n", point1.y-point2.y, point2.x-point1.x, point1.x*point2.y-point2.x*point1.y);
 
 		printf("	Parametric:");
 	}
