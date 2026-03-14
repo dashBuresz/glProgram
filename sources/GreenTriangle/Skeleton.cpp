@@ -72,6 +72,7 @@ public:
 	}
 	void addPoint(float x, float y)			
 	{
+		printf("Point %f, %f added\n", x, y);
 		geometry.Vtx().push_back(vec3(x, y, 1.0f));
 		geometry.updateGPU();
 	}
@@ -110,9 +111,9 @@ public:
 	Line(vec3 point1, vec3 point2) : p1(point1), p2(point2)
 	{
 		printf("Line added\n");
-		printf("Implicit");
+		printf("	Implicit: %f x + %f y + %f\n", point1.y-point2.y, point2.x-point1.x, point1.x*point2.x-point1.y*point2.y);
 
-		printf("Parametric");
+		printf("	Parametric:");
 	}
 	bool containsPointNear(vec3 point, float threshold) 
 	{
