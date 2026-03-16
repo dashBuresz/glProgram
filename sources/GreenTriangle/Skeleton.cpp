@@ -113,7 +113,7 @@ public:
 		printf("Line added\n");
 		printf("	Implicit: %f x + %f y + %f\n", point1.y-point2.y, point2.x-point1.x, point1.x*point2.y-point2.x*point1.y);
 
-		printf("	Parametric:");
+		printf("	Parametric: r(t) = <%f, %f> + <%f, %f>t\n", point1.x, point1.y);	//TODO finish this line and then proceed to implement other aspects of this program
 	}
 	bool containsPointNear(vec3 point, float threshold) 
 	{
