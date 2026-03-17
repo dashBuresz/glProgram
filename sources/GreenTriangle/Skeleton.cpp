@@ -105,23 +105,39 @@ public:
 class Line
 {
 	vec3 p1, p2;
-	Geometry<vec2> geometry;
+	Geometry<vec3> geometry;
+	vec3 lineEquation;
 
 public:
 	Line(vec3 point1, vec3 point2) : p1(point1), p2(point2)
 	{
+		lineEquation = cross(point1, point2);
 		printf("Line added\n");
-		printf("	Implicit: %f x + %f y + %f\n", point1.y-point2.y, point2.x-point1.x, point1.x*point2.y-point2.x*point1.y);
+		printf("	Implicit: %f x + %f y + %f\n", point1.y - point2.y, point2.x - point1.x, point1.x * point2.y - point2.x * point1.y);
 		float u = point2.x - point1.x;
 		float v = point2.y - point1.y;
-		printf("	Parametric: r(t) = <%f, %f> + <%f, %f>t\n", point1.x, point1.y, u, v);	//TODO finish this line and then proceed to implement other aspects of this program
+		printf("	Parametric: r(t) = <%f, %f> + <%f, %f>t\n", point1.x, point1.y, u, v);
 	}
-	bool containsPointNear(vec3 point, float threshold) 
+	bool containsPointNear(vec3 point, float threshold = 0.02f) 
 	{
-
+		float distance = fabs(lineEquation.x * point.x + lineEquation.y * point.y + lineEquation.z) / 
+			sqrtf(lineEquation.x * lineEquation.x + lineEquation.y * lineEquation.y);
+		return distance < threshold;
 	}
+	bool isInside(float value)
+	{
+		return value <= 1.0f && value >= -1.0f;
+	}
+
 	std::vector<vec3> clipToViewPort()
 	{
+		//borders
+		vec3 left(1, 0, 1);
+		vec3 right(1, 0, -1);
+		vec3 bottom(0, 1, 1);
+		vec3 top(0, 1, -1);
+
+		
 
 	}
 	//we might not need this
@@ -146,21 +162,39 @@ class CircleCollection
 {
 	std::vector<Circle> circles;
 public:
+	//TODO: implement functions 
 
 };
 
 class Scene
 {
-
+	PointCollection points;
+	LineCollection lines;
+	CircleCollection circles;
 public:
+	//TODO: implement the functions below
+	void addPoint()
+	{
+
+	}
+	void addLine()
+	{
+
+	}
+	void addCircle()
+	{
+
+	}
 	void draw() 
 	{
+
 	}
 };
 
-
+enum Mode { PointMode, LineMode, CircleMode, IntersectMode };
 class LineApp : public glApp {
 	Scene scene;
+	Mode mode;
 	GPUProgram* gpuProgram = nullptr;
 public:
 	LineApp() : glApp("Line app") { }
@@ -169,11 +203,54 @@ public:
 		glLineWidth(3.0f);
 		gpuProgram = new GPUProgram(vertSource, fragSource);
 	}
-	void onDisplay() {							//based on the GreenTriangleApp::onDisplay()
+	void onDisplay() {                            //based on the GreenTriangleApp::onDisplay()
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glViewport(0, 0, winWidth, winHeight);
 		scene.draw();
+	}
+	void onKeyboard(int key) override
+	{
+		if (key == 'p')
+		{
+			mode = PointMode;
+			printf("Point mode active\n");		//TODO: REMOVE BEFORE SUBMISSION
+		}
+		if (key == 'l')
+		{
+			mode = LineMode;
+			printf("Line mode active\n");		//TODO: REMOVE BEFORE SUBMISSION
+		}
+		if (key == 'c')
+		{
+			mode = CircleMode;
+			printf("Circle mode active\n");		//TODO: REMOVE BEFORE SUBMISSION
+		}
+		if (key == 'i')
+		{
+			mode = IntersectMode;
+			printf("Intersect mode active\n");	//TODO: REMOVE BEFORE SUBMISSION
+		}
+	}
+	void onMousePressed(MouseButton but, int pX, int pY) override
+	{
+		//TODO implement conversion from operating system pixel coordinates to normalized device coordinates
+		if (mode == PointMode)
+		{
+
+		}
+		if (mode == LineMode)
+		{
+
+		}
+		if (mode == CircleMode)
+		{
+
+		}
+		if (mode == IntersectMode)
+		{
+
+		}
 	}
 };
 LineApp app;
