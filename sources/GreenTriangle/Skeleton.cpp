@@ -62,33 +62,33 @@ const int winWidth = 600, winHeight = 600;
 
 class PointCollection
 {
-	Geometry<vec3> geometry;
+	Geometry<vec3>* geometry = nullptr;
 public:
-	PointCollection() {}
+	PointCollection() { geometry = new Geometry<vec3>;}
 	void addPoint(const vec3& point)
 	{
-		geometry.Vtx().push_back(point);
-		geometry.updateGPU();
+		geometry->Vtx().push_back(point);
+		geometry->updateGPU();
 	}
 	void addPoint(float x, float y)			
 	{
 		printf("Point %f, %f added\n", x, y);
-		geometry.Vtx().push_back(vec3(x, y, 1.0f));
-		geometry.updateGPU();
+		geometry->Vtx().push_back(vec3(x, y, 1.0f));
+		geometry->updateGPU();
 	}
 	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1,0,0))	
 	{
-		geometry.Draw(gpuProgram, GL_POINTS, color);
+		geometry->Draw(gpuProgram, GL_POINTS, color);
 	}
 	//utilities
-	int size() { return (int)geometry.Vtx().size(); }				
-	vec3 getPoint(int index) { return geometry.Vtx()[index]; }	
+	int size() { return (int)geometry->Vtx().size(); }				
+	vec3 getPoint(int index) { return geometry->Vtx()[index]; }	
 	int pickPoint(const vec3& mouse, float threshold = 0.02f) 
 	{
 		int pickedIndex = -1;
 		float bestDistance = threshold;
 		for (int i = 0; i<size(); i++) {
-			vec3 point = geometry.Vtx()[i];
+			vec3 point = geometry->Vtx()[i];
 			float dx = point.x - mouse.x;
 			float dy = point.y - mouse.y;
 			float distance = sqrt(dx * dx + dy * dy);
@@ -105,7 +105,6 @@ public:
 class Line
 {
 	vec3 p1, p2;
-	Geometry<vec3> geometry;
 	vec3 lineEquation;
 
 public:
@@ -131,6 +130,7 @@ public:
 
 	std::vector<vec3> clipToViewPort()
 	{
+		//TODO finish this function, it should return the clipped line segment as a vector of 2 points, or an empty vector if the line is outside the viewport
 		//borders
 		vec3 left(1, 0, 1);
 		vec3 right(1, 0, -1);
@@ -148,20 +148,28 @@ public:
 };
 class LineCollection
 {
+	Geometry<vec3>*geometry = nullptr;
 	std::vector<Line> lines;
 public:
+	LineCollection() { geometry = new Geometry<vec3>; }
 	void add(Line line) { lines.push_back(line); }
-
+	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1, 0, 0))	//TODO: default color might need to be changed
+	{
+		geometry->Draw(gpuProgram, GL_POINTS, color);
+	}
 };
 
 
 class Circle {
-
+	//TODO implement this class
 };
 class CircleCollection
 {
+	Geometry<vec3>* geometry = nullptr;
+	//TODO make a circlecollection 
 	std::vector<Circle> circles;
 public:
+	CircleCollection() { geometry = new Geometry<vec3>; }
 	//TODO: implement functions 
 
 };
@@ -197,8 +205,9 @@ class LineApp : public glApp {
 	Mode mode;
 	GPUProgram* gpuProgram = nullptr;
 public:
-	LineApp() : glApp("Line app") { }
+	LineApp() : glApp("Line app") {}
 	void onInitialization() {
+		mode = PointMode;
 		glPointSize(10.0f);
 		glLineWidth(3.0f);
 		gpuProgram = new GPUProgram(vertSource, fragSource);
