@@ -64,11 +64,15 @@ class PointCollection
 {
 	Geometry<vec3>* geometry = nullptr;
 public:
-	PointCollection() { geometry = new Geometry<vec3>;}
+	PointCollection() {}
 	void addPoint(const vec3& point)
 	{
 		geometry->Vtx().push_back(point);
 		geometry->updateGPU();
+	}
+	void initialize()
+	{
+		geometry = new Geometry<vec3>;
 	}
 	void addPoint(float x, float y)			
 	{
@@ -151,11 +155,15 @@ class LineCollection
 	Geometry<vec3>*geometry = nullptr;
 	std::vector<Line> lines;
 public:
-	LineCollection() { geometry = new Geometry<vec3>; }
+	LineCollection() { }
 	void add(Line line) { lines.push_back(line); }
 	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1, 0, 0))	//TODO: default color might need to be changed
 	{
 		geometry->Draw(gpuProgram, GL_POINTS, color);
+	}
+	void initialize()
+	{
+		geometry = new Geometry<vec3>;
 	}
 };
 
@@ -169,8 +177,12 @@ class CircleCollection
 	//TODO make a circlecollection 
 	std::vector<Circle> circles;
 public:
-	CircleCollection() { geometry = new Geometry<vec3>; }
+	CircleCollection() {}
 	//TODO: implement functions 
+	void initialize()
+	{
+		geometry = new Geometry<vec3>;
+	}
 
 };
 
@@ -193,6 +205,12 @@ public:
 	{
 
 	}
+	void initialize()
+	{
+		points.initialize();
+		lines.initialize();
+		circles.initialize();
+	}
 	void draw() 
 	{
 
@@ -211,6 +229,7 @@ public:
 		glPointSize(10.0f);
 		glLineWidth(3.0f);
 		gpuProgram = new GPUProgram(vertSource, fragSource);
+		scene.initialize();
 	}
 	void onDisplay() {                            //based on the GreenTriangleApp::onDisplay()
 		glClearColor(0, 0, 0, 0);
