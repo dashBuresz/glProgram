@@ -101,6 +101,7 @@ public:
 				bestDistance = distance;			
 			}
 		}
+		printf("Point %f, %f selected\n", geometry->Vtx()[pickedIndex].x, geometry->Vtx()[pickedIndex].y);	//DEBUG REMOVE BEFOR SUBMISSION
 		return pickedIndex;
 	}
 
@@ -156,8 +157,12 @@ class LineCollection
 	std::vector<Line> lines;
 public:
 	LineCollection() { }
-	void add(Line line) { lines.push_back(line); }
-	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1, 0, 0))	//TODO: default color might need to be changed
+	void addLine(Line line) 
+	{
+		lines.push_back(line); 
+		geometry->updateGPU();
+	}
+	void draw(GPUProgram* gpuProgram, vec3 color = vec3(0, 1, 1))
 	{
 		geometry->Draw(gpuProgram, GL_POINTS, color);
 	}
@@ -183,7 +188,7 @@ public:
 	{
 		geometry = new Geometry<vec3>;
 	}
-	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1, 0, 0))	//TODO: default color might need to be changed
+	void draw(GPUProgram* gpuProgram, vec3 color = vec3(0, 1, 0))
 	{
 		geometry->Draw(gpuProgram, GL_POINTS, color);
 	}
@@ -233,6 +238,10 @@ class LineApp : public glApp {
 	Scene scene;
 	Mode mode;
 	GPUProgram* gpuProgram = nullptr;
+	//utilities
+	int selected1 = -1;
+	int selected2 = -1;
+	int selected3 = -1;
 public:
 	LineApp() : glApp("Line app") {}
 	void onInitialization() {
@@ -291,7 +300,21 @@ public:
 			}
 			if (mode == LineMode)
 			{
-
+				if (selected1 == -1 && selected2 == -1)
+				{
+					selected1 = scene.getPoints().pickPoint(cPoint);
+				}
+				else if (selected1 != -1 && selected2 == -1)
+				{
+					selected2 = scene.getPoints().pickPoint(cPoint);
+				}
+				else if (selected1 != -1 && selected2 != -1 && selected1 != selected2)
+				{
+					scene.getLines().addLine(Line(scene.getPoints().getPoint(selected1), scene.getPoints().getPoint(selected2)));
+					selected1 = -1;
+					selected2 = -1;
+					refreshScreen();
+				}
 			}
 			if (mode == CircleMode)
 			{
