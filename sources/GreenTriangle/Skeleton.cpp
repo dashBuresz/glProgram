@@ -183,6 +183,10 @@ public:
 	{
 		geometry = new Geometry<vec3>;
 	}
+	void draw(GPUProgram* gpuProgram, vec3 color = vec3(1, 0, 0))	//TODO: default color might need to be changed
+	{
+		geometry->Draw(gpuProgram, GL_POINTS, color);
+	}
 
 };
 
@@ -211,10 +215,17 @@ public:
 		lines.initialize();
 		circles.initialize();
 	}
-	void draw() 
+	void draw(GPUProgram* gpuProgram)
 	{
-
+		points.draw(gpuProgram);
+		lines.draw(gpuProgram);
+		circles.draw(gpuProgram);
 	}
+	//getters
+	PointCollection& getPoints() { return points; }
+	LineCollection& getLines() { return lines; }
+	CircleCollection& getCircles() { return circles; }
+	
 };
 
 enum Mode { PointMode, LineMode, CircleMode, IntersectMode };
@@ -235,7 +246,14 @@ public:
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glViewport(0, 0, winWidth, winHeight);
-		scene.draw();
+		scene.draw(gpuProgram);
+	}
+	vec3 pxlToNDC(int pX, int pY)
+	{
+		float cX = (2.0f * pX) / winWidth - 1.0f;
+		float cY = 1.0f - (2.0f * pY) / winHeight;
+
+		return vec3(cX, cY, 1.0f);
 	}
 	void onKeyboard(int key) override
 	{
@@ -263,21 +281,26 @@ public:
 	void onMousePressed(MouseButton but, int pX, int pY) override
 	{
 		//TODO implement conversion from operating system pixel coordinates to normalized device coordinates
-		if (mode == PointMode)
+		if (but == MOUSE_LEFT)
 		{
+			vec3 cPoint = pxlToNDC(pX, pY);
+			if (mode == PointMode)
+			{
+				scene.getPoints().addPoint(cPoint.x, cPoint.y);
+				refreshScreen();
+			}
+			if (mode == LineMode)
+			{
 
-		}
-		if (mode == LineMode)
-		{
+			}
+			if (mode == CircleMode)
+			{
 
-		}
-		if (mode == CircleMode)
-		{
+			}
+			if (mode == IntersectMode)
+			{
 
-		}
-		if (mode == IntersectMode)
-		{
-
+			}
 		}
 	}
 };
