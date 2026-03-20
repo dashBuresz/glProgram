@@ -101,7 +101,13 @@ public:
 				bestDistance = distance;			
 			}
 		}
-		printf("Point %f, %f selected\n", geometry->Vtx()[pickedIndex].x, geometry->Vtx()[pickedIndex].y);	//DEBUG REMOVE BEFOR SUBMISSION
+		if (pickedIndex != -1)
+		{
+			printf("Point %f, %f selected\n", geometry->Vtx()[pickedIndex].x, geometry->Vtx()[pickedIndex].y);	//DEBUG REMOVE BEFORE SUBMISSION
+		}
+		else {
+			printf("No point selected\n");	//DEBUG REMOVE BEFORE SUBMISSION
+		}
 		return pickedIndex;
 	}
 
@@ -141,9 +147,9 @@ public:
 		vec3 right(1, 0, -1);
 		vec3 bottom(0, 1, 1);
 		vec3 top(0, 1, -1);
-
+		std::vector<vec3> clippedLine;
 		
-
+		return clippedLine;
 	}
 	//we might not need this
 	vec3 intersect(Line other)
@@ -160,11 +166,13 @@ public:
 	void addLine(Line line) 
 	{
 		lines.push_back(line); 
+		//TODO implement this line correctly
+		//geometry->Vtx().push_back(line.clipToViewPort());
 		geometry->updateGPU();
 	}
 	void draw(GPUProgram* gpuProgram, vec3 color = vec3(0, 1, 1))
 	{
-		geometry->Draw(gpuProgram, GL_POINTS, color);
+		geometry->Draw(gpuProgram, GL_LINES, color);
 	}
 	void initialize()
 	{
@@ -202,18 +210,6 @@ class Scene
 	CircleCollection circles;
 public:
 	//TODO: implement the functions below
-	void addPoint()
-	{
-
-	}
-	void addLine()
-	{
-
-	}
-	void addCircle()
-	{
-
-	}
 	void initialize()
 	{
 		points.initialize();
@@ -305,15 +301,18 @@ public:
 					selected1 = scene.getPoints().pickPoint(cPoint);
 				}
 				else if (selected1 != -1 && selected2 == -1)
-				{
+				{ 
 					selected2 = scene.getPoints().pickPoint(cPoint);
+					if (selected2 != -1) {
+						scene.getLines().addLine(Line(scene.getPoints().getPoint(selected1), scene.getPoints().getPoint(selected2)));
+						selected1 = -1;
+						selected2 = -1;
+					}
+					refreshScreen();
 				}
 				else if (selected1 != -1 && selected2 != -1 && selected1 != selected2)
 				{
-					scene.getLines().addLine(Line(scene.getPoints().getPoint(selected1), scene.getPoints().getPoint(selected2)));
-					selected1 = -1;
-					selected2 = -1;
-					refreshScreen();
+					
 				}
 			}
 			if (mode == CircleMode)
