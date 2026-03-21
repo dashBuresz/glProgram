@@ -230,7 +230,7 @@ public:
 	}
 	void draw(GPUProgram* gpuProgram, vec3 color = vec3(0, 1, 0))
 	{
-		geometry->Draw(gpuProgram, GL_POINTS, color);
+		geometry->Draw(gpuProgram, GL_LINE_LOOP, color);
 	}
 
 };
