@@ -143,13 +143,27 @@ public:
 	{
 		//TODO finish this function, it should return the clipped line segment as a vector of 2 points, or an empty vector if the line is outside the viewport
 		//borders
-		vec3 left(1, 0, 1);
-		vec3 right(1, 0, -1);
-		vec3 bottom(0, 1, 1);
-		vec3 top(0, 1, -1);
-		std::vector<vec3> clippedLine;
 		
-		return clippedLine;
+		vec3 left = cross(vec3(-1, -1, 1), vec3(-1, 1, 1));
+		vec3 right = cross(vec3(1, -1, 1), vec3(1, 1, 1));
+		vec3 bottom = cross(vec3(-1, -1, 1), vec3(1, -1, 1));
+		vec3 top = cross(vec3(-1, 1, 1), vec3(1, 1, 1));
+		std::vector<vec3> viewportEdges = { left, right, bottom, top };
+		for (vec3 edge : viewportEdges)
+		{
+			vec3 edgePoint = cross(lineEquation, edge);
+			//evaulate the validity of this point truly being on the viewports side
+
+			//if z is 0 the two lines are parallel, and they don't intersect each other on this plane
+
+			//if valid
+			//	normalize the point
+
+			//	add it to the endpoints if it is valid
+		}
+		std::vector<vec3> endpoints; 
+		
+		return endpoints;
 	}
 	//we might not need this
 	vec3 intersect(Line other)
