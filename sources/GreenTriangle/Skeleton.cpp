@@ -174,10 +174,9 @@ public:
 				}
 			}
 		}
-		if (endpoints.size() > 2) 
+		if (endpoints.size() != 2 && endpoints.size() != 0)
 		{
 			endpoints.clear();
-			return endpoints;
 		}
 		return endpoints;
 	}
