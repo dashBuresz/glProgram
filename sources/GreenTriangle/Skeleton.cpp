@@ -159,7 +159,18 @@ public:
 				//evaulate the validity of this point truly being on the viewports side
 				if (edgePoint.x >= -1.0f && edgePoint.x <= 1.0f && edgePoint.y >= -1.0f && edgePoint.y <= 1.0f)
 				{
-					endpoints.push_back(edgePoint);
+					//evaluate duplicates in case the line goes through the corner of the viewport
+					bool dupe = false;
+					for (int i = 0; i < endpoints.size(); i++)
+					{
+						if (fabs(endpoints[i].x - edgePoint.x) < 0.0001f
+							&& fabs(endpoints[i].y - edgePoint.y) < 0.0001f)
+						{
+							dupe = true;
+							break;
+						}
+					}
+					if (!dupe) endpoints.push_back(edgePoint);
 				}
 			}
 		}
