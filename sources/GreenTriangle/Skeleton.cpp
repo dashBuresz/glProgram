@@ -134,10 +134,6 @@ public:
 			sqrtf(lineEquation.x * lineEquation.x + lineEquation.y * lineEquation.y);
 		return distance < threshold;
 	}
-	bool isInside(float value)
-	{
-		return value <= 1.0f && value >= -1.0f;
-	}
 
 	std::vector<vec3> clipToViewPort()
 	{
@@ -149,20 +145,29 @@ public:
 		vec3 bottom = cross(vec3(-1, -1, 1), vec3(1, -1, 1));
 		vec3 top = cross(vec3(-1, 1, 1), vec3(1, 1, 1));
 		std::vector<vec3> viewportEdges = { left, right, bottom, top };
+		std::vector<vec3> endpoints;
 		for (vec3 edge : viewportEdges)
 		{
 			vec3 edgePoint = cross(lineEquation, edge);
-			//evaulate the validity of this point truly being on the viewports side
-
 			//if z is 0 the two lines are parallel, and they don't intersect each other on this plane
-
-			//if valid
-			//	normalize the point
-
-			//	add it to the endpoints if it is valid
+			if (edgePoint.z > 0.0001f)
+			{
+				//normalize the point
+				edgePoint.x /= edgePoint.z;
+				edgePoint.y /= edgePoint.z;
+				edgePoint.z /= edgePoint.z;
+				//evaulate the validity of this point truly being on the viewports side
+				if (edgePoint.x >= -1.0f && edgePoint.x <= 1.0f && edgePoint.y >= -1.0f && edgePoint.y <= 1.0f)
+				{
+					endpoints.push_back(edgePoint);
+				}
+			}
 		}
-		std::vector<vec3> endpoints; 
-		
+		if (endpoints.size() > 2) 
+		{
+			endpoints.clear();
+			return endpoints;
+		}
 		return endpoints;
 	}
 	//we might not need this
@@ -181,7 +186,10 @@ public:
 	{
 		lines.push_back(line); 
 		//TODO implement this line correctly
-		//geometry->Vtx().push_back(line.clipToViewPort());
+		for (vec3 endPoint : line.clipToViewPort())
+		{
+			geometry->Vtx().push_back(endPoint);
+		}
 		geometry->updateGPU();
 	}
 	void draw(GPUProgram* gpuProgram, vec3 color = vec3(0, 1, 1))
