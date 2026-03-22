@@ -391,16 +391,32 @@ public:
 					}
 					refreshScreen();
 				}
-				//TODO remove this if not needed
-				else if (selected1 != -1 && selected2 != -1 && selected1 != selected2)
-				{
-					
-				}
 			}
 			//TODO implement
 			if (mode == CircleMode)
 			{
-
+				if (selected1 == -1 && selected2 == -1 && selected3 == -1)
+				{
+					selected1 = scene.getPoints().pickPoint(cPoint);
+				}
+				else if (selected1 != -1 && selected2 == -1 && selected3 == -1)
+				{
+					selected2 = scene.getPoints().pickPoint(cPoint);
+				}
+				else if (selected1 != -1 && selected2 != -1 && selected3 == -1)
+				{
+					selected3 = scene.getPoints().pickPoint(cPoint);
+					if (selected3 != -1)
+					{
+						scene.getCircles().addCircle(Circle(
+							scene.getPoints().getPoint(selected1), 
+							scene.getPoints().getPoint(selected2), 
+							scene.getPoints().getPoint(selected3))
+						);
+						selected1 = selected2 = selected3 = -1;
+					}
+					refreshScreen();
+				}
 			}
 			//TODO implement
 			if (mode == IntersectMode)
