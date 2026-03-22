@@ -195,7 +195,6 @@ public:
 	void addLine(Line line) 
 	{
 		lines.push_back(line); 
-		//TODO implement this line correctly
 		for (vec3 endPoint : line.clipToViewPort())
 		{
 			geometry->Vtx().push_back(endPoint);
@@ -215,6 +214,27 @@ public:
 
 class Circle {
 	//TODO implement this class
+	vec3 p1, p2, p3;
+public:
+	Circle(vec3 point1, vec3 point2, vec3 point3) : p1(point1), p2(point2), p3(point3)
+	{
+		//TODO implement constructor
+		printf("Circle added\n");
+		float A = 2 * (point2.x - point1.x);
+		float B = 2 * (point2.y - point1.y);
+		float C = point2.x * point2.x + point2.y * point2.y - point1.x * point1.x - point1.y * point1.y;
+		float D = 2*(point3.x - point1.x);
+		float E = 2 * (point3.y - point1.y);
+		float F = point3.x * point3.x + point3.y * point3.y - point1.x * point1.x - point1.y * point1.y;
+
+	}
+	vec3 intersect(Line line1, Line line2); //implement this
+	
+	bool containsPointNear(vec3 point, float threshold = 0.02f)
+	{
+		//TODO implement
+		return false;
+	}
 };
 class CircleCollection
 {
@@ -224,6 +244,11 @@ class CircleCollection
 public:
 	CircleCollection() {}
 	//TODO: implement functions 
+	void addCircle(Circle circle)
+	{
+		circles.push_back(circle);
+		//TODO implement updating the geometry
+	}
 	void initialize()
 	{
 		geometry = new Geometry<vec3>;
@@ -241,7 +266,6 @@ class Scene
 	LineCollection lines;
 	CircleCollection circles;
 public:
-	//TODO: implement the functions below
 	void initialize()
 	{
 		points.initialize();
@@ -342,15 +366,18 @@ public:
 					}
 					refreshScreen();
 				}
+				//TODO remove this if not needed
 				else if (selected1 != -1 && selected2 != -1 && selected1 != selected2)
 				{
 					
 				}
 			}
+			//TODO implement
 			if (mode == CircleMode)
 			{
 
 			}
+			//TODO implement
 			if (mode == IntersectMode)
 			{
 
