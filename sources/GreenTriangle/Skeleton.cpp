@@ -180,10 +180,17 @@ public:
 		}
 		return endpoints;
 	}
-	//we might not need this
-	vec3 intersect(Line other)
+	vec3 intersect(Line& other)
 	{
-
+		vec3 intersectionPoint = cross(lineEquation, other.lineEquation);
+		if (fabs(intersectionPoint.z) < 0.0001f)
+		{
+			intersectionPoint.x /= intersectionPoint.z;
+			intersectionPoint.y /= intersectionPoint.z;
+			intersectionPoint.z /= intersectionPoint.z;
+		}
+		//TODO else we might want to signal that the lines don't intersect
+		return intersectionPoint;
 	}
 };
 class LineCollection
@@ -209,6 +216,11 @@ public:
 	{
 		geometry = new Geometry<vec3>;
 	}
+	//utils
+	Line& getLine(int idx)
+	{
+		return lines[idx];
+	}
 };
 
 
@@ -219,7 +231,6 @@ class Circle {
 public:
 	Circle(vec3 point1, vec3 point2, vec3 point3) : p1(point1), p2(point2), p3(point3)
 	{
-		//TODO implement constructor
 		printf("Circle added\n");
 		float A = 2 * (point2.x - point1.x);
 		float B = 2 * (point2.y - point1.y);
@@ -243,27 +254,28 @@ public:
 		printf("	Implicit: (x - %f)^2 + (y - %f)^2 = %f^2\n", centerX, centerY, radius);
 		printf("	Parametric: <<NOT IMPLEMENTED>>\n");
 	}
-	vec3 intersect(Line line1, Line line2); //implement this
+	vec3 intersect(Line& other); //implement this
 	vec3 getCenter() { return center; }
 	float getRadius() { return radius; }
 	bool containsPointNear(vec3 point, float threshold = 0.02f)
 	{
-		//TODO implement
+		float distance = sqrtf((point.x - center.x) * (point.x - center.x) + (point.y - center.y) * (point.y - center.y));
+		if (fabs(radius - distance) < threshold)
+		{
+			return true;
+		}
 		return false;
 	}
 };
 class CircleCollection
 {
 	Geometry<vec3>* geometry = nullptr;
-	//TODO make a circlecollection 
 	std::vector<Circle> circles;
 public:
 	CircleCollection() {}
-	//TODO: implement functions 
 	void addCircle(Circle circle)
 	{
 		circles.push_back(circle);
-		//TODO implement updating the geometry
 		int circlePoints = 80;
 		for (int i = 0; i < circlePoints; i++)
 		{
@@ -282,7 +294,11 @@ public:
 	{
 		geometry->Draw(gpuProgram, GL_LINE_LOOP, color);
 	}
-
+	//utils
+	Circle& getCircle(int idx)
+	{
+		return circles[idx];
+	}
 };
 
 class Scene
@@ -413,7 +429,9 @@ public:
 							scene.getPoints().getPoint(selected2), 
 							scene.getPoints().getPoint(selected3))
 						);
-						selected1 = selected2 = selected3 = -1;
+						selected1 = -1;
+						selected2 = -1;
+						selected3 = -1;
 					}
 					refreshScreen();
 				}
