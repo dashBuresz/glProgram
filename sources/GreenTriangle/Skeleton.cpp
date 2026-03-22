@@ -214,7 +214,8 @@ public:
 
 class Circle {
 	//TODO implement this class
-	vec3 p1, p2, p3;
+	vec3 p1, p2, p3, center;
+	float radius;
 public:
 	Circle(vec3 point1, vec3 point2, vec3 point3) : p1(point1), p2(point2), p3(point3)
 	{
@@ -223,13 +224,28 @@ public:
 		float A = 2 * (point2.x - point1.x);
 		float B = 2 * (point2.y - point1.y);
 		float C = point2.x * point2.x + point2.y * point2.y - point1.x * point1.x - point1.y * point1.y;
-		float D = 2*(point3.x - point1.x);
+		float D = 2 * (point3.x - point1.x);
 		float E = 2 * (point3.y - point1.y);
 		float F = point3.x * point3.x + point3.y * point3.y - point1.x * point1.x - point1.y * point1.y;
-
+		float determinant = A * E - B * D;
+		if (fabs(determinant) < 0.0001f)
+		{
+			printf("No circle can be defined\n");
+			return;
+		}
+		float centerX = (C * E - B * F) / determinant;
+		float centerY = (A * F - C * D) / determinant;
+		center = vec3(centerX, centerY, 1.0f);
+		radius = sqrtf((centerX - point1.x) * (centerX - point1.x) + (centerY - point1.y) * (centerY - point1.y));
+		printf("Circle added \n");
+		printf("	Center: %f, %f\n", centerX, centerY);
+		printf("	Radius: %f\n", radius);
+		printf("	Implicit: (x - %f)^2 + (y - %f)^2 = %f^2\n", centerX, centerY, radius);
+		printf("	Parametric: <<NOT IMPLEMENTED>>\n");
 	}
 	vec3 intersect(Line line1, Line line2); //implement this
-	
+	vec3 getCenter() { return center; }
+	float getRadius() { return radius; }
 	bool containsPointNear(vec3 point, float threshold = 0.02f)
 	{
 		//TODO implement
@@ -248,6 +264,15 @@ public:
 	{
 		circles.push_back(circle);
 		//TODO implement updating the geometry
+		int circlePoints = 80;
+		for (int i = 0; i < circlePoints; i++)
+		{
+			float t = 2.0f * M_PI * i / 80.0f;
+			float x = circle.getCenter().x + circle.getRadius() * cosf(t);
+			float y = circle.getCenter().y + circle.getRadius() * sinf(t);
+			geometry->Vtx().push_back(vec3(x, y, 1.0f));
+		}
+		geometry->updateGPU();
 	}
 	void initialize()
 	{
