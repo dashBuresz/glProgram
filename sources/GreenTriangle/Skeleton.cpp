@@ -134,7 +134,7 @@ public:
 			sqrtf(lineEquation.x * lineEquation.x + lineEquation.y * lineEquation.y);
 		return distance < threshold;
 	}
-
+	//utils
 	std::vector<vec3> clipToViewPort()
 	{
 		//TODO finish this function, it should return the clipped line segment as a vector of 2 points, or an empty vector if the line is outside the viewport
@@ -150,7 +150,7 @@ public:
 		{
 			vec3 edgePoint = cross(lineEquation, edge);
 			//if z is 0 the two lines are parallel, and they don't intersect each other on this plane
-			if (edgePoint.z > 0.0001f)
+			if (fabs(edgePoint.z) > 0.0001f)
 			{
 				//normalize the point
 				edgePoint.x /= edgePoint.z;
@@ -161,7 +161,7 @@ public:
 				{
 					//evaluate duplicates in case the line goes through the corner of the viewport
 					bool dupe = false;
-					for (int i = 0; i < endpoints.size(); i++)
+					for (size_t i = 0; i < endpoints.size(); i++)
 					{
 						if (fabs(endpoints[i].x - edgePoint.x) < 0.0001f
 							&& fabs(endpoints[i].y - edgePoint.y) < 0.0001f)
@@ -180,18 +180,19 @@ public:
 		}
 		return endpoints;
 	}
-	vec3 intersect(Line& other)
-	{
-		vec3 intersectionPoint = cross(lineEquation, other.lineEquation);
-		if (fabs(intersectionPoint.z) < 0.0001f)
-		{
-			intersectionPoint.x /= intersectionPoint.z;
-			intersectionPoint.y /= intersectionPoint.z;
-			intersectionPoint.z /= intersectionPoint.z;
+	vec3 intersect(Line& other) 
+	{ 
+		vec3 intersectionPoint = cross(lineEquation, other.lineEquation); 
+		if (fabs(intersectionPoint.z) > 0.0001f) 
+		{ 
+			intersectionPoint.x /= intersectionPoint.z; 
+			intersectionPoint.y /= intersectionPoint.z; 
+			intersectionPoint.z = 1.0f; 
 		}
-		//TODO else we might want to signal that the lines don't intersect
-		return intersectionPoint;
+		return intersectionPoint; 
 	}
+	vec3 getP1() { return p1; }
+	vec3 getP2() { return p2; }
 };
 class LineCollection
 {
@@ -221,11 +222,18 @@ public:
 	{
 		return lines[idx];
 	}
+	int pickLine(vec3 mousePosition, float threshold = 0.02f)
+	{
+		for (size_t i = 0; i < lines.size(); i++)
+		{
+			if (lines[i].containsPointNear(mousePosition, threshold)) return i;
+		}
+		return -1;
+	}
 };
 
 
 class Circle {
-	//TODO implement this class
 	vec3 p1, p2, p3, center;
 	float radius;
 public:
@@ -254,7 +262,91 @@ public:
 		printf("	Implicit: (x - %f)^2 + (y - %f)^2 = %f^2\n", centerX, centerY, radius);
 		printf("	Parametric: <<NOT IMPLEMENTED>>\n");
 	}
-	vec3 intersect(Line& other); //implement this
+	std::vector<vec3> intersect(Line& other)
+	{
+		std::vector<vec3> intersections;
+
+		vec3 a = other.getP1();
+		vec3 b = other.getP2();
+
+		float x0 = a.x;
+		float y0 = a.y;
+		float u = b.x - a.x;
+		float v = b.y - a.y;
+
+		float dx = x0 - center.x;
+		float dy = y0 - center.y;
+
+		float A = u * u + v * v;
+		float B = 2.0f * (u * dx + v * dy);
+		float C = dx * dx + dy * dy - radius * radius;
+
+		float D = B * B - 4.0f * A * C;
+
+		if (D < -0.0001f) return intersections;
+
+		if (fabs(D) < 0.0001f)
+		{
+			float t = -B / (2.0f * A);
+			intersections.push_back(vec3(x0 + t * u, y0 + t * v, 1.0f));
+			return intersections;
+		}
+
+		float sqrtD = sqrtf(D);
+		float t1 = (-B + sqrtD) / (2.0f * A);
+		float t2 = (-B - sqrtD) / (2.0f * A);
+
+		intersections.push_back(vec3(x0 + t1 * u, y0 + t1 * v, 1.0f));
+		intersections.push_back(vec3(x0 + t2 * u, y0 + t2 * v, 1.0f));
+
+		return intersections;
+	}
+	std::vector<vec3> intersect(Circle& other)
+	{
+		std::vector<vec3> intersections;
+
+		float x1 = center.x;
+		float y1 = center.y;
+		float r1 = radius;
+
+		float x2 = other.center.x;
+		float y2 = other.center.y;
+		float r2 = other.radius;
+
+		float dx = x2 - x1;
+		float dy = y2 - y1;
+		float d = sqrtf(dx * dx + dy * dy);
+
+		if (d > r1 + r2 + 0.0001f) return intersections;
+		if (d < fabs(r1 - r2) - 0.0001f) return intersections;
+		if (d < 0.0001f && fabs(r1 - r2) < 0.0001f) return intersections;
+
+		float a = (r1 * r1 - r2 * r2 + d * d) / (2.0f * d);
+		float h2 = r1 * r1 - a * a;
+
+		if (h2 < -0.0001f) return intersections;
+		if (h2 < 0.0f) h2 = 0.0f;
+
+		float h = sqrtf(h2);
+
+		float xm = x1 + a * dx / d;
+		float ym = y1 + a * dy / d;
+
+		float rx = -dy * (h / d);
+		float ry = dx * (h / d);
+
+		vec3 p1(xm + rx, ym + ry, 1.0f);
+		vec3 p2(xm - rx, ym - ry, 1.0f);
+
+		intersections.push_back(p1);
+
+		if (fabs(p1.x - p2.x) > 0.0001f || fabs(p1.y - p2.y) > 0.0001f)
+		{
+			intersections.push_back(p2);
+		}
+
+		return intersections;
+	}
 	vec3 getCenter() { return center; }
 	float getRadius() { return radius; }
 	bool containsPointNear(vec3 point, float threshold = 0.02f)
@@ -299,6 +391,14 @@ public:
 	{
 		return circles[idx];
 	}
+	int pickCircle(vec3 mousePosition, float threshold = 0.02f)
+	{
+		for (size_t i = 0; i < circles.size(); i++)
+		{
+			if (circles[i].containsPointNear(mousePosition, threshold)) return i;
+		}
+		return -1;
+	}
 };
 
 class Scene
@@ -335,6 +435,11 @@ class LineApp : public glApp {
 	int selected1 = -1;
 	int selected2 = -1;
 	int selected3 = -1;
+
+	int selectedLine1 = -1;
+	int selectedLine2 = -1;
+	int selectedCircle1 = -1;
+	int selectedCircle2 = -1;
 public:
 	LineApp() : glApp("Line app") {}
 	void onInitialization() {
@@ -382,7 +487,6 @@ public:
 	}
 	void onMousePressed(MouseButton but, int pX, int pY) override
 	{
-		//TODO implement conversion from operating system pixel coordinates to normalized device coordinates
 		if (but == MOUSE_LEFT)
 		{
 			vec3 cPoint = pxlToNDC(pX, pY);
@@ -408,7 +512,6 @@ public:
 					refreshScreen();
 				}
 			}
-			//TODO implement
 			if (mode == CircleMode)
 			{
 				if (selected1 == -1 && selected2 == -1 && selected3 == -1)
@@ -439,7 +542,84 @@ public:
 			//TODO implement
 			if (mode == IntersectMode)
 			{
+				int selectedLine = scene.getLines().pickLine(cPoint);
+				int selectedCircle = scene.getCircles().pickCircle(cPoint);
 
+				if (selectedLine1 == -1 && selectedLine2 == -1 &&
+					selectedCircle1 == -1 && selectedCircle2 == -1)
+				{
+					if (selectedLine != -1)
+					{
+						selectedLine1 = selectedLine;
+					}
+					else if (selectedCircle != -1)
+					{
+						selectedCircle1 = selectedCircle;
+					}
+				}
+				else if (selectedLine2 == -1 && selectedCircle2 == -1)
+				{
+					if (selectedLine != -1)
+					{
+						selectedLine2 = selectedLine;
+					}
+					else if (selectedCircle != -1)
+					{
+						selectedCircle2 = selectedCircle;
+					}
+
+					if (selectedLine1 != -1 && selectedLine2 != -1)
+					{
+						Line& l1 = scene.getLines().getLine(selectedLine1);
+						Line& l2 = scene.getLines().getLine(selectedLine2);
+						vec3 intersection = l1.intersect(l2);
+						if (fabs(intersection.z) > 0.0001f)
+						{
+							scene.getPoints().addPoint(intersection);
+							refreshScreen();
+						}
+					}
+					else if (selectedLine1 != -1 && selectedCircle2 != -1)
+					{
+						Line& l = scene.getLines().getLine(selectedLine1);
+						Circle& c = scene.getCircles().getCircle(selectedCircle2);
+
+						std::vector<vec3> intersections = c.intersect(l);
+						for (vec3 point : intersections)
+						{
+							scene.getPoints().addPoint(point);
+						}
+						refreshScreen();
+					}
+					else if (selectedCircle1 != -1 && selectedLine2 != -1)
+					{
+						Circle& c = scene.getCircles().getCircle(selectedCircle1);
+						Line& l = scene.getLines().getLine(selectedLine2);
+
+						std::vector<vec3> intersections = c.intersect(l);
+						for (vec3 point : intersections)
+						{
+							scene.getPoints().addPoint(point);
+						}
+						refreshScreen();
+					}
+					else if (selectedCircle1 != -1 && selectedCircle2 != -1)
+					{
+						Circle& c1 = scene.getCircles().getCircle(selectedCircle1);
+						Circle& c2 = scene.getCircles().getCircle(selectedCircle2);
+						std::vector<vec3> intersections = c1.intersect(c2);
+						for (vec3 point : intersections)
+						{
+							scene.getPoints().addPoint(point);
+						}
+						refreshScreen();
+					}
+
+					selectedLine1 = -1;
+					selectedLine2 = -1;
+					selectedCircle1 = -1;
+					selectedCircle2 = -1;
+				}
 			}
 		}
 	}
